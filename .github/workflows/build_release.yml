@@ -38,8 +38,10 @@
 
 name: .NET Core Desktop
 
-on: 
-  create:
+on:
+  push:
+    branches:
+      - archaeology-2023
   workflow_dispatch:
 
 jobs:
@@ -84,19 +86,23 @@ jobs:
           cd ./ClassIsland
           ls
           dotnet publish ./ClassIsland.csproj -p:PublishProfile=FolderProfile -c Release
-          
+         
       - name: Package application
+        shell: pwsh
         run: |
-          cd .\ClassIsland\bin\Release\net6.0-windows\publish\win-x64\
-          zip ClassIsland.zip ClassIsland.exe
-          
-      - name: Upload artefact to App Center
-        uses: wzieba/AppCenter-Github-Action@v1
+          $dir = "ClassIsland/bin/Release/net6.0-windows/publish/win-x64"
+
+          if (!(Test-Path $dir)) {
+            throw "Publish directory not found: $dir"
+          }
+
+          Compress-Archive `
+            -Path "$dir/*" `
+            -DestinationPath "ClassIsland-2023.zip" `
+            -Force
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         with:
-          appName: HelloWRC/ClassIsland
-          token: ${{secrets.APPCENTER_TOKEN}}
-          group: Collaborators
-          file: .\ClassIsland\bin\Release\net6.0-windows\publish\win-x64\ClassIsland.zip
-          notifyTesters: true
-          debug: false
-          buildVersion: $env:app_ver
+          name: ClassIsland-2023
+          path: ClassIsland-2023.zip 
