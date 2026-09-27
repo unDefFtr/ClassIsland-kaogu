@@ -43,6 +43,15 @@ on:
     branches:
       - archaeology-2023
   workflow_dispatch:
+    inputs:
+      ref:
+        description: '历史版本 tag 或 commit'
+        required: true
+        type: string
+      version:
+        description: '发布版本号'
+        required: true
+        type: string
 
 jobs:
 
@@ -59,29 +68,28 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          
+          ref: ${{ inputs.ref || github.ref }}
      
       - name: Get application version
         shell: pwsh
         run: |
-          $env:app_ver = "1.0"
-          Write-Host "Building ClassIsland $env:app_ver"
+          Write-Host "Building ClassIsland ${{ inputs.version || 'archaeology-2023' }}"
  
       - name: List files
         run: ls
       
       # Install the .NET Core workload
       - name: Install .NET Core
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 6.0.x
       
-      # Add  MSBuild to the PATH: https://github.com/microsoft/setup-msbuild
+      # Add MSBuild to the PATH: https://github.com/microsoft/setup-msbuild
       - name: Setup MSBuild.exe
-        uses: microsoft/setup-msbuild@v1.0.2
+        uses: microsoft/setup-msbuild@v2
       
         
       - name: Publish application
@@ -95,8 +103,11 @@ jobs:
  
       - name: Package application
         shell: pwsh
+        env:
+          VERSION: ${{ inputs.version || 'archaeology-2023' }}
         run: |
           $dir = "ClassIsland/bin/Release/net6.0-windows/publish/win-x64"
+          $archive = "ClassIsland-$env:VERSION-win-x64.zip"
 
           if (!(Test-Path $dir)) {
             throw "Publish directory not found: $dir"
@@ -104,11 +115,11 @@ jobs:
 
           Compress-Archive `
             -Path "$dir/*" `
-            -DestinationPath "ClassIsland-2023.zip" `
+            -DestinationPath $archive `
             -Force
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ClassIsland-2023
-          path: ClassIsland-2023.zip 
+          name: ClassIsland-${{ inputs.version || 'archaeology-2023' }}-win-x64
+          path: ClassIsland-${{ inputs.version || 'archaeology-2023' }}-win-x64.zip
