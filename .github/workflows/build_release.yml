@@ -83,12 +83,16 @@ jobs:
       - name: Setup MSBuild.exe
         uses: microsoft/setup-msbuild@v1.0.2
       
+        
       - name: Publish application
+        shell: pwsh
         run: |
-          cd ./ClassIsland
-          ls
-          dotnet publish ./ClassIsland.csproj -p:PublishProfile=FolderProfile -c Release
-         
+          msbuild .\ClassIsland\ClassIsland.csproj `
+            /restore `
+            /t:Publish `
+            /p:Configuration=Release `
+            /p:PublishProfile=FolderProfile
+ 
       - name: Package application
         shell: pwsh
         run: |
