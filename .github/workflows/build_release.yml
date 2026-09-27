@@ -63,11 +63,13 @@ jobs:
         with:
           fetch-depth: 0
           
+     
       - name: Get application version
+        shell: pwsh
         run: |
-          $env:app_ver = (git describe --abbrev=0 --tags)
-          echo $env:app_ver
-      
+          $env:app_ver = "1.0"
+          Write-Host "Building ClassIsland $env:app_ver"
+ 
       - name: List files
         run: ls
       
