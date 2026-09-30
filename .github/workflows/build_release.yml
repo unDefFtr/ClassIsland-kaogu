@@ -107,6 +107,7 @@ jobs:
           VERSION: ${{ inputs.version || 'master' }}
         run: |
           $dir = "ClassIsland/bin/Release/net6.0-windows/publish/win-x64"
+          $archive = "ClassIsland-$env:VERSION-win-x64.zip"
 
           if (!(Test-Path $dir)) {
             $dir = "ClassIsland/bin/Release/net6.0-windows/publish"
